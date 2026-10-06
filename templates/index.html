@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>AI Investment Assistant</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                linear-gradient(
+                    135deg,
+                    #0f172a,
+                    #172554,
+                    #1e3a8a
+                );
+
+            color: #ffffff;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            color: #cbd5e1;
+            font-size: 17px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        input,
+        select {
+
+            padding: 14px;
+
+            border-radius: 10px;
+
+            border: 1px solid #475569;
+
+            background: #0f172a;
+
+            color: white;
+
+            font-size: 15px;
+
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #60a5fa;
+        }
+
+        .button-container {
+            margin-top: 25px;
+        }
+
+        button {
+
+            width: 100%;
+
+            padding: 15px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background: #3b82f6;
+
+            color: white;
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #64748b;
+            cursor: not-allowed;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .section-title {
+            font-size: 23px;
+            margin-bottom: 18px;
+        }
+
+        .profile-box {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 15px;
+
+        }
+
+        .profile-item {
+
+            background: rgba(15,23,42,0.7);
+
+            padding: 18px;
+
+            border-radius: 12px;
+
+            text-align: center;
+        }
+
+        .profile-item span {
+
+            display: block;
+
+            color: #94a3b8;
+
+            font-size: 13px;
+
+            margin-bottom: 7px;
+        }
+
+        .profile-item strong {
+            font-size: 18px;
+        }
+
+        .ai-output {
+
+            background: #020617;
+
+            border-radius: 12px;
+
+            padding: 20px;
+
+            line-height: 1.7;
+
+            color: #e2e8f0;
+
+            white-space: pre-wrap;
+
+            overflow-x: auto;
+        }
+
+        .loader {
+
+            display: none;
+
+            text-align: center;
+
+            padding: 20px;
+
+            color: #93c5fd;
+        }
+
+        .warning {
+
+            margin-top: 25px;
+
+            padding: 15px;
+
+            background: rgba(245,158,11,0.12);
+
+            border: 1px solid rgba(245,158,11,0.3);
+
+            border-radius: 10px;
+
+            color: #fbbf24;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+        .footer {
+
+            text-align: center;
+
+            color: #94a3b8;
+
+            margin-top: 30px;
+
+            font-size: 13px;
+        }
+
+        @media(max-width: 700px) {
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-box {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .header h1 {
+                font-size: 30px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <h1>🤖 AI Investment Assistant</h1>
+
+        <p>
+            Educational portfolio allocation powered by
+            LangGraph + Groq
+        </p>
+
+    </div>
+
+
+    <!-- INPUT CARD -->
+
+    <div class="card">
+
+        <h2 class="section-title">
+            👤 Your Investment Profile
+        </h2>
+
+
+        <div class="form-grid">
+
+
+            <div class="input-group">
+
+                <label>Age</label>
+
+                <input
+                    type="number"
+                    id="age"
+                    value="30"
+                    min="18"
+                    max="100"
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label>Investment Goal</label>
+
+                <select id="goal">
+
+                    <option value="retirement">
+                        Retirement
+                    </option>
+
+                    <option value="wealth creation">
+                        Wealth Creation
+                    </option>
+
+                    <option value="education">
+                        Education
+                    </option>
+
+                    <option value="house">
+                        Buying a House
+                    </option>
+
+                    <option value="general savings">
+                        General Savings
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label>Investment Horizon (Years)</label>
+
+                <input
+                    type="number"
+                    id="horizon"
+                    value="25"
+                    min="1"
+                    max="50"
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label>Risk Tolerance</label>
+
+                <select id="risk">
+
+                    <option value="low">
+                        Low
+                    </option>
+
+                    <option value="medium" selected>
+                        Medium
+                    </option>
+
+                    <option value="high">
+                        High
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <div class="button-container">
+
+            <button
+                id="generateBtn"
+                onclick="generateRecommendation()">
+
+                Generate Investment Plan 🚀
+
+            </button>
+
+        </div>
+
+
+        <div class="loader" id="loader">
+
+            🤖 AI is analyzing your profile...
+            <br>
+            Please wait.
+
+        </div>
+
+
+    </div>
+
+
+    <!-- RESULTS -->
+
+    <div class="results" id="results">
+
+
+        <!-- PROFILE -->
+
+        <div class="card">
+
+            <h2 class="section-title">
+                📊 Profile Summary
+            </h2>
+
+
+            <div class="profile-box">
+
+                <div class="profile-item">
+
+                    <span>Age</span>
+
+                    <strong id="resultAge"></strong>
+
+                </div>
+
+
+                <div class="profile-item">
+
+                    <span>Goal</span>
+
+                    <strong id="resultGoal"></strong>
+
+                </div>
+
+
+                <div class="profile-item">
+
+                    <span>Horizon</span>
+
+                    <strong id="resultHorizon"></strong>
+
+                </div>
+
+
+                <div class="profile-item">
+
+                    <span>Risk</span>
+
+                    <strong id="resultRisk"></strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ALLOCATION -->
+
+        <div class="card">
+
+            <h2 class="section-title">
+                📈 Suggested Asset Allocation
+            </h2>
+
+            <div
+                class="ai-output"
+                id="allocation">
+            </div>
+
+        </div>
+
+
+        <!-- ETF -->
+
+        <div class="card">
+
+            <h2 class="section-title">
+                💼 ETF Suggestions
+            </h2>
+
+            <div
+                class="ai-output"
+                id="recommendations">
+            </div>
+
+        </div>
+
+
+        <!-- DISCLAIMER -->
+
+        <div class="warning">
+
+            ⚠️ <strong>Educational Disclaimer:</strong>
+
+            This application provides general educational
+            information about asset allocation and ETFs.
+
+            It does not constitute personalized financial,
+            investment, tax, or legal advice.
+
+            Investment values can go up or down, and past
+            performance does not guarantee future results.
+
+            Consider consulting a qualified financial
+            professional before making investment decisions.
+
+        </div>
+
+
+    </div>
+
+
+    <div class="footer">
+
+        Built with FastAPI • LangGraph • Groq • Qwen
+
+    </div>
+
+</div>
+
+
+<script>
+
+
+async function generateRecommendation() {
+
+
+    const button =
+        document.getElementById("generateBtn");
+
+    const loader =
+        document.getElementById("loader");
+
+    const results =
+        document.getElementById("results");
+
+
+    const age =
+        parseInt(
+            document.getElementById("age").value
+        );
+
+
+    const goal =
+        document.getElementById("goal").value;
+
+
+    const horizon =
+        parseInt(
+            document.getElementById("horizon").value
+        );
+
+
+    const risk =
+        document.getElementById("risk").value;
+
+
+    if (!age || !horizon) {
+
+        alert("Please enter valid age and investment horizon.");
+
+        return;
+
+    }
+
+
+    button.disabled = true;
+
+    loader.style.display = "block";
+
+    results.style.display = "none";
+
+
+    try {
+
+
+        const response =
+            await fetch("/recommend", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    age: age,
+
+                    goal: goal,
+
+                    horizon: horizon,
+
+                    risk: risk
+
+                })
+
+            });
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to generate recommendation"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        document.getElementById("resultAge")
+            .textContent =
+            data.profile.age;
+
+
+        document.getElementById("resultGoal")
+            .textContent =
+            data.profile.goal;
+
+
+        document.getElementById("resultHorizon")
+            .textContent =
+            data.profile.horizon + " years";
+
+
+        document.getElementById("resultRisk")
+            .textContent =
+            data.profile.risk;
+
+
+        document.getElementById("allocation")
+            .textContent =
+            data.allocation;
+
+
+        document.getElementById("recommendations")
+            .textContent =
+            data.recommendations;
+
+
+        results.style.display = "block";
+
+
+        results.scrollIntoView({
+            behavior: "smooth"
+        });
+
+
+    }
+
+    catch(error) {
+
+        alert(
+            "Something went wrong. Please check your API key and server."
+        );
+
+        console.error(error);
+
+    }
+
+    finally {
+
+        button.disabled = false;
+
+        loader.style.display = "none";
+
+    }
+
+}
+
+</script>
+
+
+</body>
+
+</html>
